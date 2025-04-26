@@ -1,0 +1,301 @@
+pip install pandas
+
+path = 'C:/Users/Hp/Desktop/Spark Innovation/Jupyter/'
+
+# Set an appropriate chunk size based on your system's memory chunk_size = 10000
+
+# Initialize an empty list to store chunks chunks = []
+
+# Specify the path to your CSV file path = 'C:/Users/Hp/Downloads/'
+
+# Iterate through chunks and append to the list
+for chunk in pd.read_csv(path + 'output_file_review.csv', chunksize=chunk_size): chunks.append(chunk)
+
+# Concatenate the chunks into a single DataFrame csv_reader = pd.concat(chunks, ignore_index=True) csv_reader.head()
+csv_reader.info()
+# Assuming 'csv_reader' is your DataFrame
+object_description = csv_reader.describe(include=['O']) # 'O' stands for object data type
+
+# Display the descriptive statistics for object columns print(object_description)
+unique_values = csv_reader['review_id'].unique() unique_values_count = len(unique_values)
+
+print("Unique values in 'review_id' column:", unique_values) print("Number of unique values:", unique_values_count) unique_values = csv_reader['business_id'].unique() unique_values_count = len(unique_values)
+
+print("Unique values in 'business_id' column:", unique_values) print("Number of unique values:", unique_values_count) unique_values = csv_reader['user_id'].unique() unique_values_count = len(unique_values)
+
+print("Unique values in 'user_id' column:", unique_values) print("Number of unique values:", unique_values_count) unique_values = csv_reader['user_id'].unique() unique_values_count = len(unique_values)
+ 
+csv_reader = csv_reader.dropna() import re
+
+def clean_text(text):
+# Remove non-alphanumeric characters using regular expressions clean_text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+return clean_text #covert to lowercase text = text.lower()
+csv_reader['text'][0], clean_text(csv_reader['text'][0]) csv_reader['text'].head().apply(clean_text)
+pip install wordcloud matplotlib numpy import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
+# Sample text data (replace this with your Yelp dataset text) text_data = csv_reader['text']
+text_data = str(text_data)
+
+# Generate a word cloud
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text_data)
+
+# Plot the WordCloud image plt.figure(figsize=(10, 5)) plt.imshow(wordcloud, interpolation='bilinear') plt.axis('off') # Turn off the axis labels plt.show()
+def preprocess(text):
+return' '.join([word for word in word_tokenize(text) if word not in stopwords.words('english') and not word.isdigit() and word not in string.punctuation])
+pip install nltk import nltk
+from nltk.tokenize import word_tokenize def clean_text(text):
+csv_reader['tokens'] = csv_reader['clean_text'].apply(word_tokenize) import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
+# Sample text data (replace this with your Yelp dataset text) text_data = csv_reader['text']
+text_data = str(text_data)
+
+# Generate a word cloud
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text_data)
+
+# Plot the WordCloud image plt.figure(figsize=(10, 5))
+ 
+plt.axis('off') # Turn off the axis labels plt.show()
+def preprocess(text):
+return ' '.join([word for word in word_tokenize(text) if word not in stopwords.words('english') and not word.isdigit() and word not in string.punctuation])
+pip install swifter pip install spacy
+from nltk.tokenize import word_tokenize from nltk.corpus import stopwords import string
+import nltk import swifter import spacy
+import pandas as pd
+# Download spaCy model spacy.cli.download("en_core_web_sm")
+
+# Download NLTK resources (if not already downloaded) nltk.download('stopwords')
+nltk.download('punkt')
+# Assuming csv_reader is your DataFrame def preprocess(text):
+stop_words = set(stopwords.words('english'))
+return ' '.join([word for word in word_tokenize(text) if word not in stop_words and not word.isdigit() and word not in string.punctuation])
+
+# Load the downloaded model
+nlp = spacy.load("en_core_web_sm", disable=["parser", "ner"])
+
+def preprocess_spacy(text): if pd.isnull(text):
+return ''
+stop_words = set(stopwords.words('english')) # Define stop_words here doc = nlp(text)
+return ' '.join([token.text for token in doc if token.text.lower() not in stop_words and not token.text.isdigit() and token.text.lower() not in string.punctuation])
+
+# Assuming df is your DataFrame
+csv_reader['cleaned_text'] = csv_reader['text'].swifter.apply(preprocess_spacy) import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
+# Sample text data (replace this with your Yelp dataset text) text_data = csv_reader['cleaned_text']
+text_data = str(text_data)
+
+# Generate a word cloud
+ 
+# Plot the WordCloud image plt.figure(figsize=(10, 5)) plt.imshow(wordcloud, interpolation='bilinear') plt.axis('off') # Turn off the axis labels plt.show()
+from nltk.stem import WordNetLemmatizer from nltk.stem import PorterStemmer
+def preprocess_with_stemming(text): stop_words = set(stopwords.words('english')) porter_stemmer = PorterStemmer()
+return ' '.join([porter_stemmer.stem(word) for word in word_tokenize(text) if word not in stop_words and not word.isdigit() and word not in string.punctuation])
+
+# Example usage
+csv_reader['cleaned_text_stemmed'] = csv_reader['text'].apply(preprocess_with_stemming) csv_reader.to_csv('Main_Project.csv', index=False)
+Main_Project_path = 'C:/Users/Hp/Desktop/Spark Innovation/Jupyter/Main_Project.csv' csv_reader.to_csv(Main_Project_path, index=False)
+print(f"Main_Project saved to {Main_Project_path}") pip install scikit-learn
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Sample list of text documents text=['text']
+# Create a TF-IDF vectorizer tfidf_vectorizer = TfidfVectorizer()
+tfidf_matrix = tfidf_vectorizer.fit_transform(text) pip install pyspellchecker
+# Specify the full path to your preprocessed dataset
+file_path = 'C:/Users/Hp/Desktop/Spark Innovation/Jupyter/Main_Project.csv'
+
+# Load the preprocessed dataset df_review = pd.read_csv(file_path)
+
+# Display basic information about the dataset print(df_review.info())
+from sklearn.model_selection import train_test_split
+
+# Assuming you have a column named 'cleaned_text_stemmed' X = df_review['text']
+
+# Assuming 'is_fake' is your target variable y = df_review['is_fake']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+ 
+# Step 1: Load the preprocessed dataset
+df_review = pd.read_csv('C:/Users/Hp/Desktop/Spark Innovation/Jupyter/Main_Project.csv') # file_path = 'C:/Users/Hp/Desktop/Spark Innovation/Jupyter/Main_Project.csv'
+
+# Display basic information about the dataset print(df_review.info())
+
+# Step 2: Feature Engineering
+
+# Criteria 1: Unusual language patterns (Example: Count of uppercase words) df_review['uppercase_word_count'] = df_review['text'].apply(lambda x: sum(1 for word in x.split() if word.isupper()))
+
+# Criteria 2: Abnormal review length df_review['review_length'] = df_review['text'].apply(len)
+
+# Display the updated DataFrame print(df_review.head())
+# Step 1: Feature Engineering
+
+# Criteria 1: Unusual language patterns (Example: Count of uppercase words) df_review['uppercase_word_count'] = df_review['text'].apply(lambda x: sum(1 for word in x.split() if word.isupper()))
+
+# Criteria 2: Abnormal review length df_review['review_length'] = df_review['text'].apply(len)
+
+# Criteria 3: Suspicious timing or posting frequency (Assuming you have a 'timestamp' column) df_review['date'] = pd.to_datetime(df_review['date'])
+df_review['hour_of_day'] = df_review['date'].dt.hour
+
+# Criteria 4: Lack of details or specific information (Example: Count of numeric characters) df_review['numeric_char_count'] = df_review['text'].apply(lambda x: sum(1 for char in x if char.isdigit()))
+# Step 2: Explore the Features # Explore the new features
+print(df_review[['uppercase_word_count', 'review_length', 'hour_of_day', 'numeric_char_count']])
+
+# Step 3: Visualize the Features (Optional)
+
+# You can use various visualization libraries (e.g., seaborn, matplotlib) to explore the distribution of features.
+ 
+# Based on the exploration, analyze the features and define criteria for identifying fake reviews. # For example, you might consider reviews with an unusually high count of uppercase words as suspicious.
+
+# Step 5: Apply the Criteria
+
+# Create a new column 'predicted_label' based on the defined criteria df_review['predicted_label'] = 0 # Initialize as 0
+# Apply criteria (Example: If uppercase_word_count > threshold, mark as fake) df_review.loc[df_review['uppercase_word_count'] > 5, 'predicted_label'] = 1	# Adjust the threshold as needed
+
+# Evaluate the results print(df_review[['text', 'predicted_label']])
+# Assuming you have a DataFrame named df_review with a 'predicted_label' column
+
+# Create separate DataFrames for each label
+df_genuine = df_review[df_review['predicted_label'] == 0] df_fake = df_review[df_review['predicted_label'] == 1]
+
+# Save each DataFrame to a CSV file df_genuine.to_csv('True.csv', index=False) df_fake.to_csv('Fake.csv', index=False) import pandas as pd
+
+# Read the CSV files into DataFrames df_genuine = pd.read_csv('True.csv') df_fake = pd.read_csv('Fake.csv')
+
+# Display basic information about the DataFrames print("Genuine Reviews:") print(df_genuine.info())
+
+
+print("\nFake Reviews:") print(df_fake.info())
+# Save the DataFrames to CSV files
+True_csv_path = 'C:/Users/Hp/Desktop/Spark Innovation/Jupyter/True.csv' Fake_csv_path = 'C:/Users/Hp/Desktop/Spark Innovation/Jupyter/Fake.csv'
+
+df_genuine.to_csv(True_csv_path, index=False) df_fake.to_csv(Fake_csv_path, index=False)
+
+print(f"Genuine Reviews saved to {True_csv_path}") print(f"Fake Reviews saved to {Fake_csv_path}") import pandas as pd
+import numpy as np
+ 
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report import re
+import string
+path = 'C:/Users/Hp/Desktop/Spark Innovation/Jupyter/' data_fake = pd.read_csv(path + 'Fake.csv')
+data_true = pd.read_csv(path + 'True.csv') data_fake.head()
+data_true.head() data_fake["class"] = 0
+data_true["class"] = 1 data_fake.shape, data_true.shape
+data_fake_manual_testing = data_fake.tail(10) for i in range(1356206, 1356196, -1):
+data_fake.drop([i], axis = 0, inplace = True)
+
+
+data_true_manual_testing = data_true.tail(10) for i in range(5634072, 5634062, -1):
+data_true.drop([i], axis = 0, inplace = True) data_fake.shape, data_true.shape data_fake_manual_testing['class'] = 0
+data_true_manual_testing['class'] = 1 data_fake_manual_testing.head(10) data_true_manual_testing.head(10)
+data_merge = pd.concat([data_fake, data_true], axis = 0) data_merge.head(10)
+data_merge.columns
+data = data_merge.drop(['review_id', 'user_id', 'business_id', 'stars', 'useful', 'funny',
+'cool', 'date','cleaned_text', 'cleaned_text_stemmed', 'uppercase_word_count', 'review_length', 'hour_of_day', 'numeric_char_count'], axis = 1)
+data.isnull().sum()
+# Assuming 'data' is a pandas DataFrame
+data = data.sample(frac=1) #for random shuffling data.head(10)
+data.columns data.head()
+def wordopt(text): text = text.lower()
+text = re.sub('\\[.*?\\]', '', text)
+text = re.sub('https?://\\S+|www\\.\\S+', '', text) text = re.sub('<.*?>+', '', text)
+text = re.sub('[%s]' % re.escape(string.punctuation), '', text) text = re.sub('\n', '', text)
+text = re.sub('\\w*\\d\\w*', '', text)
+ 
+data['text'] = data['text'].apply(wordopt) x = data['text']
+y = data['class']
+# x_train, x_test, y_train, y_test = train_test_split(x,y,test_size = 0.25) import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer from scipy.sparse import csr_matrix
+from sklearn.model_selection import train_test_split
+# Assuming x_train, x_test, y_train, and y_test are already defined # Split the original dataset into training and testing subsets
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=42)
+
+# Split the original training dataset into a smaller subset for training
+x_train_subset,	_,	y_train_subset,	_	=	train_test_split(x_train,	y_train,	train_size=0.2, stratify=y_train, random_state=42)
+
+# Initialize TfidfVectorizer with appropriate parameters vectorizer = TfidfVectorizer()
+
+# Fit and transform the training subset
+xv_train_sparse = vectorizer.fit_transform(x_train_subset)
+# Assuming x_test and y_test are your original test data and labels respectively # Split the original test dataset into a smaller subset for testing
+x_test_subset, _, y_test_subset, _ = train_test_split(x_test, y_test, test_size=0.2, stratify=y_test, random_state=42)
+
+# Transform the test subset
+xv_test_sparse = vectorizer.transform(x_test_subset)
+
+# Convert the sparse matrices to Compressed Sparse Row (CSR) format for efficient computations xv_train_sparse = xv_train_sparse.tocsr()
+xv_test_sparse = xv_test_sparse.tocsr()
+
+# Now you can use xv_train_sparse and xv_test_sparse for further processing from sklearn.linear_model import LogisticRegression
+
+LR = LogisticRegression() LR.fit(xv_train_sparse, y_train_subset) pred_lr = LR.predict(xv_test_sparse) LR.score(xv_test_sparse, y_test_subset)
+print(classification_report(y_test_subset, pred_lr))
+# Assuming you have a sparse matrix or array, e.g., using scipy.sparse.csr_matrix
+ 
+from scipy.sparse import csr_matrix
+
+# Generate some example sparse data (replace this with your actual data) xv_train_sparse = csr_matrix(np.random.random((100, 10)))
+
+# Assuming y_train is your label array y_train_subset = np.random.randint(0, 2, size=100)
+
+DT = DecisionTreeClassifier()
+
+# Use getnnz() to get the number of non-zero elements DT.fit(xv_train_sparse, y_train_subset)
+from sklearn.tree import DecisionTreeClassifier import numpy as np
+from scipy.sparse import csr_matrix
+
+# Assuming you have a sparse matrix or array for training xv_train_sparse = csr_matrix(np.random.random((100, 10)))
+
+# Assuming y_train is your label array for training y_train_subset = np.random.randint(0, 2, size=100)
+
+# Create a DecisionTreeClassifier instance DT = DecisionTreeClassifier()
+
+# Fit the classifier to the training data DT.fit(xv_train_sparse, y_train_subset)
+
+# Now you can make predictions
+# Assuming you have a sparse matrix or array for testing xv_test_sparse = csr_matrix(np.random.random((50, 10)))
+
+# Make predictions
+pred_dt = DT.predict(xv_test_sparse) import numpy as np
+from scipy.sparse import csr_matrix
+from sklearn.ensemble import GradientBoostingClassifier from sklearn.metrics import accuracy_score
+
+# Assuming you have a sparse matrix or array for training xv_train_sparse = csr_matrix(np.random.random((100, 10)))
+
+# Assuming y_train is your label array for training y_train_subset = np.random.randint(0, 2, size=100)
+
+# Fit the classifier to the training data GB = GradientBoostingClassifier()
+ 
+# Now you can make predictions
+# Assuming you have a sparse matrix or array for testing xv_test_sparse = csr_matrix(np.random.random((50, 10)))
+
+# Assuming y_test is your label array for testing y_test_subset = np.random.randint(0, 2, size=50)
+
+# Assuming you want to evaluate on a random subsample subsample_size = 10000 # Adjust the size based on available memory
+
+# Ensure subsample_size is not larger than the number of rows in the sparse matrix subsample_size = min(subsample_size, xv_test_sparse.shape[0])
+
+# Generate random subsample indices
+subsample_indices	=	np.random.choice(xv_test_sparse.shape[0],	size=subsample_size, replace=True)
+
+# Use shape[0] to get the number of rows in the sparse matrix
+score = accuracy_score(y_test_subset[subsample_indices], pred_gb[subsample_indices])
+
+print("Score:", score) print(classification_report(y_test_subset, pred_gb)) from sklearn.ensemble import RandomForestClassifier import numpy as np
+from scipy.sparse import csr_matrix
+
+# Assuming you have a sparse matrix or array for training xv_train_sparse = csr_matrix(np.random.random((100, 10)))
+
+# Assuming y_train is your label array for training y_train_subset = np.random.randint(0, 2, size=100)
+
+# Create a RandomForestClassifier instance RF = RandomForestClassifier()
+
+# Fit the classifier to the training data RF.fit(xv_train_sparse, y_train_subset)
+
+# Now you can make predictions
+# Assuming you have a sparse matrix or array for testing xv_test_sparse = csr_matrix(np.random.random((50, 10)))
+
+# Make predictions
+pred_rf = RF.predict(xv_test_sparse)
